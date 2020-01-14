@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="12cac9cd-4ae2-49a3-a04f-3cea146b02b8" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectId" id="1WNKuFDJQCiOxxTjH5ejqbqiFlr" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="restartRequiresConfirmation" value="false" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings module-name="TINY_NETWORK_TOOLS_PYQT5" is-module-sdk="true">
+        <option name="myUseModuleSdk" value="true" />
+        <option name="myModuleName" value="TINY_NETWORK_TOOLS_PYQT5" />
+      </console-settings>
+    </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/uiform" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.MainWindow">
+    <configuration name="MainUi" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TINY_NETWORK_TOOLS_PYQT5" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/MainUi.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="MainWindow" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TINY_NETWORK_TOOLS_PYQT5" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/MainWindow.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.MainWindow" />
+        <item itemvalue="Python.MainUi" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="12cac9cd-4ae2-49a3-a04f-3cea146b02b8" name="Default Changelist" comment="" />
+      <created>1578984832222</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1578984832222</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="705" y="379" width="588" height="532" key="#com.intellij.tools.ToolEditorDialog" timestamp="1578985574635">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="705" y="379" width="588" height="532" key="#com.intellij.tools.ToolEditorDialog/0.27.1920.1053/1920.0.1920.1080@0.27.1920.1053" timestamp="1578985574635" />
+    <state x="798" y="404" width="424" height="483" key="FileChooserDialogImpl" timestamp="1579004695594">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="798" y="404" width="424" height="483" key="FileChooserDialogImpl/0.27.1920.1053/1920.0.1920.1080@0.27.1920.1053" timestamp="1579004695594" />
+    <state width="1893" height="255" key="GridCell.Tab.0.bottom" timestamp="1579011247159">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1893" height="255" key="GridCell.Tab.0.bottom/0.27.1920.1053/1920.0.1920.1080@0.27.1920.1053" timestamp="1579011247159" />
+    <state width="1893" height="255" key="GridCell.Tab.0.center" timestamp="1579011247159">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1893" height="255" key="GridCell.Tab.0.center/0.27.1920.1053/1920.0.1920.1080@0.27.1920.1053" timestamp="1579011247159" />
+    <state width="1893" height="255" key="GridCell.Tab.0.left" timestamp="1579011247159">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1893" height="255" key="GridCell.Tab.0.left/0.27.1920.1053/1920.0.1920.1080@0.27.1920.1053" timestamp="1579011247159" />
+    <state width="1893" height="255" key="GridCell.Tab.0.right" timestamp="1579011247159">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1893" height="255" key="GridCell.Tab.0.right/0.27.1920.1053/1920.0.1920.1080@0.27.1920.1053" timestamp="1579011247159" />
+    <state x="496" y="281" key="SettingsEditor" timestamp="1579004709752">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="496" y="281" key="SettingsEditor/0.27.1920.1053/1920.0.1920.1080@0.27.1920.1053" timestamp="1579004709752" />
+    <state x="485" y="226" width="700" height="854" key="find.popup" timestamp="1578985113776">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="485" y="226" width="700" height="854" key="find.popup/0.27.1920.1053/1920.0.1920.1080@0.27.1920.1053" timestamp="1578985113776" />
+  </component>
+</project>
