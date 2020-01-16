@@ -9,7 +9,7 @@ class UdpAgent(threading.Thread):
     def __init__(self):
         k = 1
 
-class TcpAgent(threading.Thread, QObject):
+class TcpAgent(QObject):
 
     # MACROS
     MODE_CLIENT = 1
@@ -28,12 +28,13 @@ class TcpAgent(threading.Thread, QObject):
     }
     client_socket_list = list()
     # information signal channel.
-    sig_tcp_agent_send_msg = pyqtSignal( object )
-    sig_tcp_agent_recv_network_msg = pyqtSignal( object )
+    sig_tcp_agent_send_msg = pyqtSignal(str, name="sig_tcp_agent_send_msg")
+    sig_tcp_agent_recv_network_msg = pyqtSignal(str, name="sig_tcp_agent_recv_network_msg")
 
     def __init__(self):
         super( TcpAgent, self ).__init__()
-        k = 1
+
+
 
     def set_mode(self,mode):
         self.mode = mode
@@ -45,20 +46,30 @@ class TcpAgent(threading.Thread, QObject):
             self.tcp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.tcp_socket.setblocking( False )
             try:
-                self.tcp_socket.bind( ( ip, port )  )
+                self.tcp_socket.bind( ( ip, port ) )
             except Exception as ret:
                 msg = "Please confirm the port number if occupied.\n"
-                self.sig_tcp_agent_send_msg.emit( msg )
-                print( msg )
-                return False
+                self.sig_tcp_agent_send_msg.emit( str(ret) + msg )
+                self.is_connect = False
             else:
                 self.tcp_socket.listen()
+                self.is_connect = True
         elif self.mode == self.MODE_CLIENT:
-            self.tcp_socket.connect( (ip, port) )
-        self.is_connect = True
-        return True
+            try:
+                self.tcp_socket.connect( (ip, port) )
+            except Exception as ret:
+                msg = "\nPlease confirm that the host is listening.\n"
+                self.sig_tcp_agent_send_msg.emit( str(ret) + msg )
+                self.is_connect = False
+            else:
+                self.is_connect = True
+        return self.is_connect
 
     def disconnect(self):
+        if self.is_connect == False:
+            msg = "Network not online.\n"
+            self.sig_tcp_agent_send_msg.emit( msg )
+            return
         self.tcp_socket.close()
         self.is_connect = False
 
