@@ -398,7 +398,7 @@
          <item>
           <widget class="QLabel" name="label_8">
            <property name="text">
-            <string>Aim IP:</string>
+            <string>Target IP:</string>
            </property>
           </widget>
          </item>
@@ -408,12 +408,16 @@
          <item>
           <widget class="QLabel" name="label_9">
            <property name="text">
-            <string>Aim Port:</string>
+            <string>Target Port:</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEditAimPort"/>
+          <widget class="QLineEdit" name="lineEditAimPort">
+           <property name="text">
+            <string>5220</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonPing">

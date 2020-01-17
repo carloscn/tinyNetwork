@@ -34,8 +34,6 @@ class TcpAgent(QObject):
     def __init__(self):
         super( TcpAgent, self ).__init__()
 
-
-
     def set_mode(self,mode):
         self.mode = mode
 

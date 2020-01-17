@@ -2,35 +2,38 @@
 import sys
 import subprocess
 import MainUi
+import platform
 import socket
+import threading
 import psutil
+from hexconvert import HexConvert as hexConv
 from TcpAgent import TcpAgent as tcpAgent
 from TcpAgent import UdpAgent as udpAgent
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMessageBox
 from PyQt5.QtCore import pyqtSignal
 from PyQt5 import QtCore
 
-
 ''' BACKUP SLOT FUNCTIONS ON MainUi.py to avoid MainUi.py is re-write when converted to MainUi.py automatilly.
 
-        self.pushButtonConnect.clicked.connect(MainWindow.on_pushButtonConnect_click)
         self.comboBoxProtocal.currentIndexChanged['int'].connect(MainWindow.on_comboBoxProtocal_currentIndexChanged)
         self.comboBoxMode.currentIndexChanged['int'].connect(MainWindow.on_comboBoxMode_currentIndexChanged)
-        self.pushButtonPing.clicked.connect(MainWindow.on_pushButtonPing_click)
-        self.pushButtonDisconnect.clicked.connect(MainWindow.on_pushButtonDisconnect_click)
-        self.radioButtonRecASCII.clicked['bool'].connect(MainWindow.on_radioButtonRecASCII_clicked)
-        self.radioButtonRecHex.toggled['bool'].connect(MainWindow.on_radioButtonRecHex_clicked)
         self.checkBoxWordWrap.clicked['bool'].connect(MainWindow.on_checkBoxWordWrap_clicked)
         self.checkBoxDisplayTime.clicked['bool'].connect(MainWindow.on_checkBoxDisplayTime_clicked)
         self.checkBoxDisplayRecTime.clicked['bool'].connect(MainWindow.on_checkBoxDisplayRecTime_clicked)
-        self.radioButtonSendASCII.clicked['bool'].connect(MainWindow.on_radioButtonSendASCII_checked)
-        self.radioButtonSendHex.clicked['bool'].connect(MainWindow.on_radioButtonSendHex_checked)
-        self.checkBoxRepeatSend.clicked['bool'].connect(MainWindow.on_radioButtonRepeatSend_checked)
+        self.checkBoxRepeatSend.clicked['bool'].connect(MainWindow.on_checkBoxRepeatSend_clicked)
+        self.radioButtonSendASCII.clicked.connect(MainWindow.on_radioButtonSendASCII_clicked)
+        self.radioButtonSendHex.clicked.connect(MainWindow.on_radioButtonSendHex_clicked)
+        self.radioButtonRecASCII.clicked.connect(MainWindow.on_radioButtonRecASCII_clicked)
+        self.radioButtonRecHex.clicked.connect(MainWindow.on_radioButtonRecHex_clicked)
         self.spinBox.valueChanged['int'].connect(MainWindow.on_spinBoxTime_valueChanged)
-        self.pushButtonSend.clicked['bool'].connect(MainWindow.on_pushButtonSend_clicked)
-        self.pushButtonClear.clicked['bool'].connect(MainWindow.on_pushButtonClear_clicked)
+        self.pushButtonConnect.clicked.connect(MainWindow.on_pushButtonConnect_click)
+        self.pushButtonPing.clicked.connect(MainWindow.on_pushButtonPing_click)
+        self.pushButtonDisconnect.clicked.connect(MainWindow.on_pushButtonDisconnect_click)
+        self.pushButtonSend.clicked.connect(MainWindow.on_pushButtonSend_clicked)
+        self.pushButtonClear.clicked.connect(MainWindow.on_pushButtonClear_clicked)
         self.pushButtonWriteIp.clicked.connect(MainWindow.on_pushButtonWriteIp_clicked)
         self.pushButtonAppIp.clicked.connect(MainWindow.on_pushButtonAppIp_clicked)
+        
 '''
 
 class MainWindow(QMainWindow):
@@ -45,12 +48,25 @@ class MainWindow(QMainWindow):
     protocal_mode = PROTOCAL_TCP
     tcpAgent = tcpAgent()
     eth_device_list = []
+
+    ASCII_FLAG = 0
+    HEX_FLAG = 1
+    recv_disp_mode = ASCII_FLAG
+    send_disp_mode = ASCII_FLAG
+
+    is_disp_send_time = False
+    is_disp_recv_time = False
+    is_word_wrap = False
+    is_repeat_send_mode = False
+
+    repeat_send_time_ms = 0
+
+
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.ui.setupUi(self)
         self.setWindowTitle("Tiny Network Tool v1.0")
         self.init_ui_logic()
-
 
     def on_btn_click_signal(self):
         k = 1
@@ -75,7 +91,6 @@ class MainWindow(QMainWindow):
         self.ui.radioButtonRecASCII.setChecked(True)
         self.ui.radioButtonSendASCII.setChecked(True)
         self.refresh_devices_list()
-
 
     def refresh_devices_list(self):
         for i in range( self.ui.comboBoxEthList.count() ):
@@ -127,6 +142,10 @@ class MainWindow(QMainWindow):
         info_win.setText( content )
         info_win.exec()
 
+    def repeat_send(self):
+        self.on_pushButtonSend_clicked()
+
+    timer = threading.Timer(5, repeat_send)
     @QtCore.pyqtSlot("int", name="on_comboboxprotocal_currentindexchanged")
     def on_comboBoxProtocal_currentIndexChanged(self, int_index):
         print("ui: protocal index change to " + str( int_index ) )
@@ -194,7 +213,6 @@ class MainWindow(QMainWindow):
             self.ui.comboBoxMode.setEnabled( False )
             self.ui.comboBoxProtocal.setEnabled( False )
 
-
     @QtCore.pyqtSlot(name="on_pushbuttondisconnect_click")
     def on_pushButtonDisconnect_click(self):
         self.tcpAgent.disconnect()
@@ -206,47 +224,95 @@ class MainWindow(QMainWindow):
         self.ui.comboBoxMode.setEnabled( True )
         self.ui.comboBoxProtocal.setEnabled( True )
 
-
     @QtCore.pyqtSlot(name="on_radiobuttonrecascii_clicked")
     def on_radioButtonRecASCII_clicked(self):
-        pass
+        print("radioButtonRecASCII")
+        self.recv_disp_mode = self.ASCII_FLAG
 
     @QtCore.pyqtSlot(name="on_radiobuttonrechex_clicked")
     def on_radioButtonRecHex_clicked(self):
-        pass
+        print("radioButtonRecHex")
+        self.recv_disp_mode = self.HEX_FLAG
 
-    @QtCore.pyqtSlot(name="on_checkboxwordwrap_clicked")
-    def on_checkBoxWordWrap_clicked(self):
-        pass
+    @QtCore.pyqtSlot(name="on_radiobuttonsendascii_clicked")
+    def on_radioButtonSendASCII_clicked(self):
+        print("radioButtonSendASCII ")
+        self.send_disp_mode = self.ASCII_FLAG
+
+    @QtCore.pyqtSlot(name="on_radiobuttonsendhex_clicked")
+    def on_radioButtonSendHex_clicked(self):
+        print("radioButtonSendHex ")
+        self.send_disp_mode = self.HEX_FLAG
+
+    @QtCore.pyqtSlot("bool", name="on_checkboxwordwrap_clicked")
+    def on_checkBoxWordWrap_clicked(self, checked):
+        print("checkBoxWordWrap: " + str(checked))
+        self.is_word_wrap = checked
 
     @QtCore.pyqtSlot("bool", name="on_checkboxwordwrap_clicked")
     def on_checkBoxDisplayTime_clicked(self, checked):
-        pass
+        print("checkBoxDisplayTime: " + str(checked))
+        self.is_disp_send_time = checked
 
+    @QtCore.pyqtSlot("bool", name="on_checkboxdisplayrectime_clicked")
     def on_checkBoxDisplayRecTime_clicked(self, checked):
-        pass
+        print("checkBoxDisplayRecTime : " + str(checked))
+        self.is_disp_recv_time = checked
 
-    def on_radioButtonSendASCII_checked(self ,checked):
-        pass
+    @QtCore.pyqtSlot("bool", name="on_checkboxrepeatsend_clicked")
+    def on_checkBoxRepeatSend_clicked(self, checked):
+        print( "checkBoxRepeatSend : " + str(checked) )
+        self.is_repeat_send_mode = checked
 
-    def on_radioButtonSendHex_checked(self, checked):
-        pass
-
-    def on_radioButtonRepeatSend_checked(self, checked):
-        pass
-
+    @QtCore.pyqtSlot("int", name="on_spinboxtime_valuechanged")
     def on_spinBoxTime_valueChanged(self, time):
-        pass
+        print( "ms value change:" + str(time) )
+        self.repeat_send_time_ms = time
 
-    def on_pushButtonSend_clicked(self, click):
-        pass
+    @QtCore.pyqtSlot(name="on_pushbuttonsend_clicked")
+    def on_pushButtonSend_clicked(self):
+        if len(self.ui.textEditSend.toPlainText()) == 0:
+            if self.timer.isAlive():
+                self.timer.cancel()
+            self.pop_error_window("Send Editor is Empty!")
+            self.ui.textEditSend.setFocus()
+            return
+        browser_text = self.ui.textEditSend.toPlainText()
+        if self.send_disp_mode == self.ASCII_FLAG:
+            self.tcpAgent.send_bytes( list( browser_text ) )
+        elif self.send_disp_mode == self.HEX_FLAG:
+            send_bytes = hexConv.stringTobytes( browser_text )
+            self.tcpAgent.send_bytes( send_bytes )
 
-    def on_pushButtonClear_clicked(self, click):
-        pass
 
+    @QtCore.pyqtSlot(name="on_pushbuttonclear_clicked")
+    def on_pushButtonClear_clicked(self):
+        self.ui.textBrowserRec.clear()
+
+    @QtCore.pyqtSlot(name="on_pushbuttonwriteip_clicked")
     def on_pushButtonWriteIp_clicked(self):
-        pass
-
+        # need root authorization.
+        net_word = self.ui.comboBoxEthList.currentText()
+        net_dev_name = net_word.split(",")
+        if net_dev_name[0] == "lo":
+            self.pop_error_window("'lo' may not modify the ip.")
+            return
+        print( "current select deivce :" + net_dev_name[0] )
+        net_addr = self.ui.lineEditLocalIp.text()
+        if platform.system() == "Linux" :
+            msg = ""
+            try:
+                ret = subprocess.call(["ifconfig", net_dev_name[0], net_addr])
+            except Exception as ret_e:
+                msg = ret_e
+            else:
+                pass
+            if ret == 0:
+                self.pop_info_window( msg + net_dev_name[0] + ": " + net_addr + " set succussful")
+            else:
+                self.pop_error_window( msg +  net_dev_name[0] + ": " + net_addr + " set failed" )
+        elif platform.system() == "Windows":
+            pass
     def on_pushButtonAppIp_clicked(self):
         pass
 
