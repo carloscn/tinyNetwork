@@ -72,7 +72,13 @@ class TcpAgent(QObject):
         self.is_connect = False
 
     def send_bytes(self, byteList):
-        self.tcp_socket.send( byteList, len(byteList) )
+        try :
+            self.tcp_socket.sendall( byteList )
+        except Exception as ret:
+            msg = "The network run into an error!\n" + str( ret )
+            self.sig_tcp_agent_send_msg.emit( msg )
+        else:
+            pass
 
     def send_byte(self, byte):
         self.tcp_socket.send( byte, 1 )
@@ -104,7 +110,6 @@ class TcpAgent(QObject):
                         else:
                             client.close()
                             self.client_socket_list.remove( (client, address) )
-
 
         elif self.mode == self.MODE_CLIENT:
             while True:

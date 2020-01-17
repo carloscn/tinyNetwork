@@ -6,9 +6,9 @@ import platform
 import socket
 import threading
 import psutil
-from hexconvert import HexConvert as hexConv
-from TcpAgent import TcpAgent as tcpAgent
-from TcpAgent import UdpAgent as udpAgent
+from HexConvert import HexConvert as hexConv
+from Agent import TcpAgent as tcpAgent
+from Agent import UdpAgent as udpAgent
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMessageBox
 from PyQt5.QtCore import pyqtSignal
 from PyQt5 import QtCore
@@ -279,11 +279,11 @@ class MainWindow(QMainWindow):
             return
         browser_text = self.ui.textEditSend.toPlainText()
         if self.send_disp_mode == self.ASCII_FLAG:
-            self.tcpAgent.send_bytes( list( browser_text ) )
-        elif self.send_disp_mode == self.HEX_FLAG:
-            send_bytes = hexConv.stringTobytes( browser_text )
+            send_bytes = hexConv.stringToUtf8( browser_text )
             self.tcpAgent.send_bytes( send_bytes )
-
+        elif self.send_disp_mode == self.HEX_FLAG:
+            send_bytes = hexConv.hexStringTobytes( browser_text )
+            self.tcpAgent.send_bytes( send_bytes )
 
     @QtCore.pyqtSlot(name="on_pushbuttonclear_clicked")
     def on_pushButtonClear_clicked(self):
@@ -302,7 +302,7 @@ class MainWindow(QMainWindow):
         if platform.system() == "Linux" :
             msg = ""
             try:
-                ret = subprocess.call(["ifconfig", net_dev_name[0], net_addr])
+                ret = subprocess.call(["pkexec","ifconfig", net_dev_name[0], net_addr])
             except Exception as ret_e:
                 msg = ret_e
             else:
@@ -313,10 +313,34 @@ class MainWindow(QMainWindow):
                 self.pop_error_window( msg +  net_dev_name[0] + ": " + net_addr + " set failed" )
         elif platform.system() == "Windows":
             pass
-    def on_pushButtonAppIp_clicked(self):
-        pass
 
-    @QtCore.pyqtSlot(str, name="sig_tcp_agent_send_msg")
+    @QtCore.pyqtSlot(name="on_pushbuttonappip_clicked")
+    def on_pushButtonAppIp_clicked(self):
+        self.ui.statusbar.showMessage("system try to put in for a new ip from router dhcp server...")
+        net_word = self.ui.comboBoxEthList.currentText()
+        net_dev_name = net_word.split(",")
+        if net_dev_name[0] == "lo":
+            self.pop_error_window("'lo' may not modify the ip.")
+            return
+        print( "current select deivce :" + net_dev_name[0] )
+        if platform.system() == "Linux" :
+            msg = ""
+            try:
+                ret = subprocess.call(["pkexec","dhclient", net_dev_name[0]] ,timeout=3)
+            except Exception as ret_e:
+                msg = ret_e
+            else:
+                pass
+            if ret == 0:
+                self.ui.statusbar.showMessage("system get a new ip.", 3000)
+                self.pop_info_window( msg + net_dev_name[0] + ": " + " set succuss.")
+            else:
+                self.ui.statusbar.showMessage("Application of ip was denied.", 3000)
+                self.pop_error_window( msg + net_dev_name[0] + ": " + " set failed" )
+        elif platform.system() == "Windows":
+            pass
+
+
     def on_tcpAgent_send_msg(self, msg):
         print("recv : sig_tcp_agent_send_msg ")
         self.pop_error_window( msg )

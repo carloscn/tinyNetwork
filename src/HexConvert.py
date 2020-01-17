@@ -46,3 +46,14 @@ class HexConvert:
         #     hex_str += str(hex(item))[2:].zfill(2).upper() + " "
         # return hex_str
         return ''.join(['%02X ' % b for b in bs])
+
+    '''
+    string to bytes 
+    eg:
+    "hello world"
+    b'\x68\x65\x6c\x6c\x6f\x20\x77\x6f\x72\x6c\x64'
+    '''
+    def stringToUtf8(str):
+        b = bytes(str, encoding="utf-8")
+        return b
+
