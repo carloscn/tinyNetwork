@@ -10,7 +10,7 @@ import numpy
 from HexConvert import HexConvert as hexConv
 from Agent import TcpAgent as tcpAgent
 from Agent import UdpAgent as udpAgent
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMessageBox, QLabel
 from PyQt5.QtCore import pyqtSignal, QByteArray
 from PyQt5 import QtCore
 
@@ -241,7 +241,9 @@ class MainWindow(QMainWindow):
 
     @QtCore.pyqtSlot(name="on_pushbuttondisconnect_click")
     def on_pushButtonDisconnect_click(self):
-        self.tcpAgent.disconnect()
+        self.tcpAgent.tcp_disconnect()
+        self.ui.statusbar.showMessage("TCP Disconnected!")
+        self.ui.statusbar.setStyleSheet("color: rgb(204, 0, 0);")
         self.ui.pushButtonConnect.setEnabled( True )
         self.ui.pushButtonDisconnect.setEnabled( False )
         self.ui.pushButtonAppIp.setEnabled( True )
@@ -381,6 +383,24 @@ class MainWindow(QMainWindow):
             print(int_list)
             self.ui.textBrowserRec.append( hexConv.intlistToHexString( int_list ) )
 
+    @QtCore.pyqtSlot(str, name="sig_tcp_agent_client_name")
+    def on_tcpAgent_client_name(self, i_o_o, name_str):
+        if i_o_o == 0:
+            # delete client from list
+            pass
+        elif i_o_o == 1:
+            # add client to list
+            temp_str = name_str.split(",")
+            ip_str = temp_str[0]
+            port_str = temp_str[1]
+            ip_label = QLabel(ip_str)
+            port_label = QLabel(port_str)
+            self.ui.tableWidgetClientList.insertRow(1)
+            pass
+        else:
+            pass
+
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
@@ -388,5 +408,6 @@ if __name__ == '__main__':
     # deal with the signal and slot
     win.tcpAgent.sig_tcp_agent_send_msg.connect( win.on_tcpAgent_send_msg )
     win.tcpAgent.sig_tcp_agent_recv_network_msg.connect( win.on_tcpAgent_recv_network_msg )
+
     win.show()
     sys.exit(app.exec_())

@@ -2,6 +2,9 @@
 import sys
 import socket
 import threading
+import inspect
+import ctypes
+import signal
 from PyQt5 import QtCore
 from PyQt5.QtCore import QByteArray, QObject, pyqtSignal
 
@@ -31,11 +34,33 @@ class TcpAgent(QObject):
     sig_tcp_agent_send_msg = pyqtSignal(str, name="sig_tcp_agent_send_msg")
     sig_tcp_agent_recv_network_msg = pyqtSignal("QByteArray", name="sig_tcp_agent_recv_network_msg")
 
+    # int: 0 a client exit; str is empty
+    # int: 1 a client connected in; str is name and port eg: "192.168.1.1,58853"
+    sig_tcp_agent_client_name = pyqtSignal(int, str, name="sig_tcp_agent_client_name")
+
     def __init__(self):
         super( TcpAgent, self ).__init__()
 
+    def _async_raise(self, tid, exctype):
+        """raises the exception, performs cleanup if needed"""
+        tid = ctypes.c_long(tid)
+        if not inspect.isclass(exctype):
+            exctype = type(exctype)
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+        if res == 0:
+            raise ValueError("invalid thread id")
+        elif res != 1:
+            # """if it returns a number greater than one, you're in trouble,
+            # and you should call it again with exc=NULL to revert the effect"""
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+            raise SystemError("PyThreadState_SetAsyncExc failed")
+
+    def stop_thread(self, thread):
+        self._async_raise(thread.ident, SystemExit)
+
     def set_mode(self,mode):
         self.mode = mode
+
     def run_thread(self):
         if self.is_connect != True:
             return
@@ -47,6 +72,7 @@ class TcpAgent(QObject):
                     pass
                 else:
                     self.client_socket_list.append( (client_socket, client_address) )
+                    client_info = str( client_address )
                     client_socket.setblocking( False )
                     msg = "TCP address: " + client_address
                     self.sig_tcp_agent_send_msg( msg )
@@ -76,10 +102,15 @@ class TcpAgent(QObject):
                         q_recv_array.append(recv_tcp_msg)
                         self.sig_tcp_agent_recv_network_msg.emit(q_recv_array)
 
+    recv_threading = threading.Thread()
     def connect(self,ip, port):
         self.tcp_info["ip"] = ip
         self.tcp_info["port"] = port
         if self.mode == self.MODE_SERVER:
+            # tcp_socket needs to reassign using the socket.socket, otherwise,
+            # an [Errno 9] Bad file descriptor error will occur.
+            # Tcp client connects to the Service-Terminal with a new port number.
+            self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.tcp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.tcp_socket.setblocking( False )
             try:
@@ -91,9 +122,10 @@ class TcpAgent(QObject):
             else:
                 self.tcp_socket.listen()
                 self.is_connect = True
-                t = threading.Thread(target=self.run_thread, name = self.threading_name)
-                t.start()
+                self.recv_threading = threading.Thread(target=self.run_thread, name = self.threading_name)
+                self.recv_threading.start()
         elif self.mode == self.MODE_CLIENT:
+            self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 self.tcp_socket.connect( (ip, port) )
             except Exception as ret:
@@ -102,8 +134,8 @@ class TcpAgent(QObject):
                 self.is_connect = False
             else:
                 self.is_connect = True
-                t = threading.Thread(target=self.run_thread, name = self.threading_name)
-                t.start()
+                self.recv_threading = threading.Thread(target=self.run_thread, name=self.threading_name)
+                self.recv_threading.start()
             return self.is_connect
         self.tcp_socket.close()
         self.is_connect = False
@@ -121,3 +153,10 @@ class TcpAgent(QObject):
     def send_byte(self, byte):
         self.tcp_socket.send( byte, 1 )
 
+    def tcp_disconnect(self):
+        self.is_connect = False
+        print("system: kill recv thread.")
+        self.stop_thread(self.recv_threading)
+        print("system: closed tcp socket.")
+        self.tcp_socket.shutdown(2)
+        self.tcp_socket.close()
