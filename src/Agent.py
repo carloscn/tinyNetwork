@@ -29,61 +29,14 @@ class TcpAgent(QObject):
     client_socket_list = list()
     # information signal channel.
     sig_tcp_agent_send_msg = pyqtSignal(str, name="sig_tcp_agent_send_msg")
-    sig_tcp_agent_recv_network_msg = pyqtSignal(str, name="sig_tcp_agent_recv_network_msg")
+    sig_tcp_agent_recv_network_msg = pyqtSignal("QByteArray", name="sig_tcp_agent_recv_network_msg")
 
     def __init__(self):
         super( TcpAgent, self ).__init__()
 
     def set_mode(self,mode):
         self.mode = mode
-
-    def connect(self,ip, port):
-        self.tcp_info["ip"] = ip
-        self.tcp_info["port"] = port
-        if self.mode == self.MODE_SERVER:
-            self.tcp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.tcp_socket.setblocking( False )
-            try:
-                self.tcp_socket.bind( ( ip, port ) )
-            except Exception as ret:
-                msg = "Please confirm the port number if occupied.\n"
-                self.sig_tcp_agent_send_msg.emit( str(ret) + msg )
-                self.is_connect = False
-            else:
-                self.tcp_socket.listen()
-                self.is_connect = True
-        elif self.mode == self.MODE_CLIENT:
-            try:
-                self.tcp_socket.connect( (ip, port) )
-            except Exception as ret:
-                msg = "\nPlease confirm that the host is listening.\n"
-                self.sig_tcp_agent_send_msg.emit( str(ret) + msg )
-                self.is_connect = False
-            else:
-                self.is_connect = True
-        return self.is_connect
-
-    def disconnect(self):
-        if self.is_connect == False:
-            msg = "Network not online.\n"
-            self.sig_tcp_agent_send_msg.emit( msg )
-            return
-        self.tcp_socket.close()
-        self.is_connect = False
-
-    def send_bytes(self, byteList):
-        try :
-            self.tcp_socket.sendall( byteList )
-        except Exception as ret:
-            msg = "The network run into an error!\n" + str( ret )
-            self.sig_tcp_agent_send_msg.emit( msg )
-        else:
-            pass
-
-    def send_byte(self, byte):
-        self.tcp_socket.send( byte, 1 )
-
-    def run(self):
+    def run_thread(self):
         if self.is_connect != True:
             return
         if self.mode == self.MODE_SERVER:
@@ -114,8 +67,57 @@ class TcpAgent(QObject):
         elif self.mode == self.MODE_CLIENT:
             while True:
                 try:
-                    k = 1
+                    recv_tcp_msg = self.tcp_socket.recv(1024)
                 except Exception as ret:
-                    k = 2
+                    pass
                 else:
-                    k = 3
+                    if recv_tcp_msg:
+                        q_recv_array = QByteArray()
+                        q_recv_array.append(recv_tcp_msg)
+                        self.sig_tcp_agent_recv_network_msg.emit(q_recv_array)
+
+    def connect(self,ip, port):
+        self.tcp_info["ip"] = ip
+        self.tcp_info["port"] = port
+        if self.mode == self.MODE_SERVER:
+            self.tcp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.tcp_socket.setblocking( False )
+            try:
+                self.tcp_socket.bind( ( ip, port ) )
+            except Exception as ret:
+                msg = "Please confirm the port number if occupied.\n"
+                self.sig_tcp_agent_send_msg.emit( str(ret) + msg )
+                self.is_connect = False
+            else:
+                self.tcp_socket.listen()
+                self.is_connect = True
+                t = threading.Thread(target=self.run_thread, name = self.threading_name)
+                t.start()
+        elif self.mode == self.MODE_CLIENT:
+            try:
+                self.tcp_socket.connect( (ip, port) )
+            except Exception as ret:
+                msg = "\nPlease confirm that the host is listening.\n"
+                self.sig_tcp_agent_send_msg.emit( str(ret) + msg )
+                self.is_connect = False
+            else:
+                self.is_connect = True
+                t = threading.Thread(target=self.run_thread, name = self.threading_name)
+                t.start()
+            return self.is_connect
+        self.tcp_socket.close()
+        self.is_connect = False
+        return self.is_connect
+
+    def send_bytes(self, byteList):
+        try :
+            self.tcp_socket.sendall( byteList )
+        except Exception as ret:
+            msg = "The network run into an error!\n" + str( ret )
+            self.sig_tcp_agent_send_msg.emit( msg )
+        else:
+            pass
+
+    def send_byte(self, byte):
+        self.tcp_socket.send( byte, 1 )
+

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import numpy as np
 
 class HexConvert:
 
@@ -30,6 +31,7 @@ class HexConvert:
     b'\x01#Eg\x89\xab\xcd\xef\x01#Eg\x89\xab\xcd\xef'
     '''
     def hexStringTobytes(str):
+        str = str.upper()
         str = str.replace(" ", "")
         return bytes.fromhex(str)
         # return a2b_hex(str)
@@ -48,6 +50,17 @@ class HexConvert:
         return ''.join(['%02X ' % b for b in bs])
 
     '''
+    bytes to hex string 
+    eg:
+    [ 01 89 ab cd ef ]
+    '01 89 AB CD EF'
+    '''
+    def intlistToHexString(int_list):
+        hex_str = ''
+        for item in int_list:
+            hex_str += str(hex(item))[2:].zfill(2).upper() + " "
+        return hex_str
+    '''
     string to bytes 
     eg:
     "hello world"
@@ -57,3 +70,22 @@ class HexConvert:
         b = bytes(str, encoding="utf-8")
         return b
 
+    '''
+    int value to byte
+    eg:
+    9
+    b'\x09'
+    '''
+    def byteToInt(b):
+        num = int.from_bytes(b, 'little')
+        return num
+
+    '''
+    int value to byte
+    eg:
+    b'\x09'
+    9
+    '''
+    def intToByte(num):
+        b1 = bytes([num])
+        return b1

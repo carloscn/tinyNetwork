@@ -6,16 +6,17 @@ import platform
 import socket
 import threading
 import psutil
+import numpy
 from HexConvert import HexConvert as hexConv
 from Agent import TcpAgent as tcpAgent
 from Agent import UdpAgent as udpAgent
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMessageBox
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QByteArray
 from PyQt5 import QtCore
 
 ''' BACKUP SLOT FUNCTIONS ON MainUi.py to avoid MainUi.py is re-write when converted to MainUi.py automatilly.
 
-        self.comboBoxProtocal.currentIndexChanged['int'].connect(MainWindow.on_comboBoxProtocal_currentIndexChanged)
+       self.comboBoxProtocal.currentIndexChanged['int'].connect(MainWindow.on_comboBoxProtocal_currentIndexChanged)
         self.comboBoxMode.currentIndexChanged['int'].connect(MainWindow.on_comboBoxMode_currentIndexChanged)
         self.checkBoxWordWrap.clicked['bool'].connect(MainWindow.on_checkBoxWordWrap_clicked)
         self.checkBoxDisplayTime.clicked['bool'].connect(MainWindow.on_checkBoxDisplayTime_clicked)
@@ -91,6 +92,13 @@ class MainWindow(QMainWindow):
         self.ui.radioButtonRecASCII.setChecked(True)
         self.ui.radioButtonSendASCII.setChecked(True)
         self.refresh_devices_list()
+        if self.ui.comboBoxMode.currentIndex() == self.MODE_CLIENT:
+            self.ui.groupBoxClientList.setHidden(True)
+            self.setMaximumSize(0,0)
+        else:
+            self.ui.groupBoxClientList.setHidden(False)
+            self.setMaximumSize(0,0)
+
 
     def refresh_devices_list(self):
         for i in range( self.ui.comboBoxEthList.count() ):
@@ -146,6 +154,7 @@ class MainWindow(QMainWindow):
         self.on_pushButtonSend_clicked()
 
     timer = threading.Timer(5, repeat_send)
+
     @QtCore.pyqtSlot("int", name="on_comboboxprotocal_currentindexchanged")
     def on_comboBoxProtocal_currentIndexChanged(self, int_index):
         print("ui: protocal index change to " + str( int_index ) )
@@ -154,18 +163,32 @@ class MainWindow(QMainWindow):
             self.ui.comboBoxMode.setEnabled( False )
             self.ui.pushButtonConnect.setEnabled( False )
             self.ui.pushButtonDisconnect.setEnabled( False )
+            self.ui.lineEditLocalPort.setEnabled( False )
+            self.ui.lineEditLocalIp.setEnabled( False )
         else:
             self.ui.comboBoxMode.setEnabled( True )
             self.ui.pushButtonConnect.setEnabled( True )
             self.ui.pushButtonDisconnect.setEnabled( True )
+
 
     @QtCore.pyqtSlot("int", name="on_comboboxmode_currentindexchanged")
     def on_comboBoxMode_currentIndexChanged(self, int_index):
         self.tcp_mode = int_index
         if self.tcp_mode == self.MODE_SERVER:
             self.ui.pushButtonConnect.setText("Listen")
+            self.ui.lineEditLocalPort.setEnabled( True )
+            self.ui.lineEditLocalIp.setEnabled( True )
         elif self.tcp_mode == self.MODE_CLIENT:
+
+            self.ui.lineEditLocalPort.setEnabled( False )
+            self.ui.lineEditLocalIp.setEnabled( False )
             self.ui.pushButtonConnect.setText("Connect")
+        if self.ui.comboBoxMode.currentIndex() == self.MODE_CLIENT:
+            self.ui.groupBoxClientList.setHidden(True)
+            self.setMaximumSize(0,0)
+        else:
+            self.ui.groupBoxClientList.setHidden(False)
+            self.setMaximumSize(0,0)
 
     @QtCore.pyqtSlot(name="on_pushbuttonping_click")
     def on_pushButtonPing_click(self):
@@ -173,9 +196,6 @@ class MainWindow(QMainWindow):
         aim_ip = self.ui.lineEditAimIp.text()
         if len( aim_ip ) == 0:
             self.pop_error_window("Aim ip is Empty.")
-            return
-        if "." not in aim_ip or ":" not in aim_ip:
-            self.pop_error_window("IP format illegal")
             return
         self.ui.statusbar.showMessage("ping " + aim_ip + "| waitting...")
         ret = subprocess.call(["ping", aim_ip ,"-c", "2"])
@@ -188,23 +208,26 @@ class MainWindow(QMainWindow):
 
     @QtCore.pyqtSlot(name="on_pushbuttonconnect_click")
     def on_pushButtonConnect_click(self):
-        if len( self.ui.lineEditLocalIp.text() ) == 0:
+        if len( self.ui.lineEditAimIp.text() ) == 0:
             self.pop_error_window("Local IP is Empty!")
-            self.ui.lineEditLocalIp.setFocus()
+            self.ui.lineEditAimIp.setFocus()
+            self.ui.lineEditAimIp.setStyleSheet("background-color: rgb(204, 0, 0);")
             return
-        if len( self.ui.lineEditLocalPort.text() ) == 0:
+        if len( self.ui.lineEditAimPort.text() ) == 0:
             self.pop_error_window("Listen Port is Empty!")
-            self.ui.lineEditLocalPort.setFocus()
+            self.ui.lineEditAimPort.setFocus()
+            self.ui.lineEditAimPort.setStyleSheet("background-color: rgb(204, 0, 0);")
             return
-        local_ip = self.ui.lineEditLocalIp.text()
-        local_port = int( self.ui.lineEditLocalPort.text() )
+        self.ui.lineEditAimPort.setStyleSheet("")
+        self.ui.lineEditAimIp.setStyleSheet("")
+        ip_str = self.ui.lineEditAimIp.text()
+        port_int = int( self.ui.lineEditAimPort.text() )
         mode = self.ui.comboBoxMode.currentIndex()
         self.tcpAgent.set_mode( mode )
-        if  bool( 1 - self.tcpAgent.connect( local_ip, local_port ) ):
-            # tcpAgent error information via the msg sginal-slot mechanism
-            pass
-        else:
-            self.pop_info_window( local_ip + "  " + str(local_port)  + " has been set up.")
+        if  self.tcpAgent.connect( ip_str, port_int ):
+            self.pop_info_window( ip_str + "  " + str(port_int)  + " has been set up.")
+            self.ui.statusbar.showMessage( "Linked-> ip : [" + ip_str + "]" + ", port : [" + str(port_int) + "]" )
+            self.ui.statusbar.setStyleSheet("color: rgb(78, 154, 6);")
             self.ui.pushButtonConnect.setEnabled(False)
             self.ui.pushButtonDisconnect.setEnabled( True )
             self.ui.pushButtonAppIp.setEnabled( False )
@@ -212,6 +235,9 @@ class MainWindow(QMainWindow):
             self.ui.comboBoxEthList.setEnabled( False )
             self.ui.comboBoxMode.setEnabled( False )
             self.ui.comboBoxProtocal.setEnabled( False )
+        else:
+            # tcpAgent error information via the msg sginal-slot mechanism
+            pass
 
     @QtCore.pyqtSlot(name="on_pushbuttondisconnect_click")
     def on_pushButtonDisconnect_click(self):
@@ -345,9 +371,16 @@ class MainWindow(QMainWindow):
         print("recv : sig_tcp_agent_send_msg ")
         self.pop_error_window( msg )
 
-    @QtCore.pyqtSlot(str, name="sig_tcp_agent_recv_network_msg")
-    def on_tcpAgent_recv_network_msg(self):
-        pass
+    @QtCore.pyqtSlot("QByteArray", name="sig_tcp_agent_recv_network_msg")
+    def on_tcpAgent_recv_network_msg(self, array):
+        print(array)
+        if self.recv_disp_mode == self.ASCII_FLAG:
+            self.ui.textBrowserRec.append( str(array, encoding='utf-8') )
+        else:
+            int_list = numpy.array( array )
+            print(int_list)
+            self.ui.textBrowserRec.append( hexConv.intlistToHexString( int_list ) )
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
@@ -355,6 +388,5 @@ if __name__ == '__main__':
     # deal with the signal and slot
     win.tcpAgent.sig_tcp_agent_send_msg.connect( win.on_tcpAgent_send_msg )
     win.tcpAgent.sig_tcp_agent_recv_network_msg.connect( win.on_tcpAgent_recv_network_msg )
-
     win.show()
     sys.exit(app.exec_())
