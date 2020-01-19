@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>957</width>
-    <height>758</height>
+    <height>732</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -437,11 +437,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEditAimIp">
-           <property name="styleSheet">
-            <string notr="true">background-color: rgb(239, 41, 41);</string>
-           </property>
-          </widget>
+          <widget class="QLineEdit" name="lineEditAimIp"/>
          </item>
          <item>
           <widget class="QLabel" name="label_9">
@@ -615,11 +611,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>934</x>
-     <y>408</y>
+     <y>528</y>
     </hint>
     <hint type="destinationlabel">
      <x>934</x>
-     <y>408</y>
+     <y>528</y>
     </hint>
    </hints>
   </connection>
@@ -646,12 +642,12 @@
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>94</x>
-     <y>370</y>
+     <x>117</x>
+     <y>490</y>
     </hint>
     <hint type="destinationlabel">
-     <x>97</x>
-     <y>370</y>
+     <x>120</x>
+     <y>490</y>
     </hint>
    </hints>
   </connection>
@@ -663,11 +659,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>303</x>
-     <y>370</y>
+     <y>490</y>
     </hint>
     <hint type="destinationlabel">
      <x>303</x>
-     <y>370</y>
+     <y>490</y>
     </hint>
    </hints>
   </connection>
@@ -678,12 +674,12 @@
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>135</x>
-     <y>400</y>
+     <x>157</x>
+     <y>520</y>
     </hint>
     <hint type="destinationlabel">
-     <x>135</x>
-     <y>400</y>
+     <x>157</x>
+     <y>520</y>
     </hint>
    </hints>
   </connection>
@@ -694,12 +690,12 @@
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>199</x>
-     <y>429</y>
+     <x>221</x>
+     <y>549</y>
     </hint>
     <hint type="destinationlabel">
-     <x>204</x>
-     <y>429</y>
+     <x>226</x>
+     <y>549</y>
     </hint>
    </hints>
   </connection>
@@ -710,12 +706,12 @@
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>170</x>
-     <y>458</y>
+     <x>192</x>
+     <y>578</y>
     </hint>
     <hint type="destinationlabel">
-     <x>175</x>
-     <y>458</y>
+     <x>197</x>
+     <y>578</y>
     </hint>
    </hints>
   </connection>
@@ -726,12 +722,12 @@
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>73</x>
-     <y>532</y>
+     <x>96</x>
+     <y>652</y>
     </hint>
     <hint type="destinationlabel">
-     <x>80</x>
-     <y>532</y>
+     <x>103</x>
+     <y>652</y>
     </hint>
    </hints>
   </connection>
@@ -743,11 +739,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>303</x>
-     <y>532</y>
+     <y>652</y>
     </hint>
     <hint type="destinationlabel">
      <x>303</x>
-     <y>532</y>
+     <y>652</y>
     </hint>
    </hints>
   </connection>
@@ -758,12 +754,12 @@
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>104</x>
-     <y>564</y>
+     <x>127</x>
+     <y>684</y>
     </hint>
     <hint type="destinationlabel">
-     <x>116</x>
-     <y>564</y>
+     <x>134</x>
+     <y>684</y>
     </hint>
    </hints>
   </connection>
@@ -775,11 +771,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>219</x>
-     <y>566</y>
+     <y>686</y>
     </hint>
     <hint type="destinationlabel">
      <x>219</x>
-     <y>566</y>
+     <y>686</y>
     </hint>
    </hints>
   </connection>
@@ -791,11 +787,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>632</x>
-     <y>567</y>
+     <y>687</y>
     </hint>
     <hint type="destinationlabel">
      <x>632</x>
-     <y>567</y>
+     <y>687</y>
     </hint>
    </hints>
   </connection>
@@ -807,11 +803,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>934</x>
-     <y>567</y>
+     <y>687</y>
     </hint>
     <hint type="destinationlabel">
      <x>934</x>
-     <y>567</y>
+     <y>687</y>
     </hint>
    </hints>
   </connection>
@@ -844,6 +840,22 @@
     <hint type="destinationlabel">
      <x>271</x>
      <y>285</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>comboBoxEthList</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>comboBoxEthList</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>219</x>
+     <y>153</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>224</x>
+     <y>153</y>
     </hint>
    </hints>
   </connection>
