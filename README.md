@@ -1,17 +1,17 @@
 # Tiny Network Debug Tool
 
-* A tool of TCP/UDP debug assistant on Linux.*
+**A tool of TCP/UDP debug assistant on Linux in Python(PyQt5).**
+
+<img src="assets/main_ui.png" alt="main_ui" align="center" />
 
 ## Features 
 
-- **Modern UI and all features from Web WeChat.**
-- **Block message recall.**
-- **Stickers showing support.** [[?]](https://github.com/geeeeeeeeek/electronic-wechat/issues/2)
-- Share subscribed passages on Weibo, Qzone, Facebook, Twitter, Evernote, and email.
-- Mention users in a group chat.
-- Drag and drop to send photos.
-- Behaves like a native app, based on dozens of optimization.
-- Removes URL link redirects and takes you directly to blocked websites (e.g. taobao.com).
+- Using the PyQt5 Core framework (Slot and Signal)
+- Selected one network device from multi-network card on PC.
+- Support "Ping" function.
+- Base functions that have TCP(Server mode / Client mode) protocal and UDP protocal.
+- Set network card a IP and get a IP from router that enable the function of DHCP. 
+- Support multiple receive and send formats that include Hex and ASCII.
 
 ## How To Use
 
@@ -43,8 +43,8 @@ npm run build:win64
 brew cask install electronic-wechat
 ```
 
-#### [Download Released App](https://github.com/geeeeeeeeek/electronic-wechat/releases)
+#### [Download Released deb](https://github.com/lifimlt/tinyNetwork/releases)
 
-#### License [MIT](LICENSE.md)
+#### License [GNU General Public License v3.0](LICENSE)
 
-*Electronic WeChat* is released by this open source project. While Web WeChat is a major component  in the app, it should be noted that this is a community release and not an official WeChat release.
+*Network TCP/UDP Debug Tool* is released by this open source project. 
