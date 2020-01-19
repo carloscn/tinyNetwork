@@ -2,7 +2,7 @@
 
 * A tool of TCP/UDP debug assistant on Linux.*
 
-## Features ([CHANGELOG](CHANGELOG.md))
+## Features 
 
 - **Modern UI and all features from Web WeChat.**
 - **Block message recall.**
