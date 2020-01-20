@@ -435,18 +435,18 @@ class MainWindow(QMainWindow):
 
     @QtCore.pyqtSlot(int, str, name="sig_tcp_agent_client_name")
     def on_tcpAgent_client_name(self, i_o_o, name_str):
+        (ip_str, port) = name_str
         if i_o_o == 0:
+            print( "remove :" + name_str )
             # delete client from list
             pass
         elif i_o_o == 1:
             # add client to list
-            temp_str = name_str.split(",")
-            ip_str = temp_str[0]
-            port_str = temp_str[1]
             ip_label = QLabel(ip_str)
-            port_label = QLabel(port_str)
+            port_label = QLabel(str(port))
             self.ui.tableWidgetClientList.insertRow(1)
             pass
+        
         else:
             pass
 

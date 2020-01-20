@@ -10,7 +10,7 @@ from PyQt5.QtCore import QByteArray, QObject, pyqtSignal
 
 class UdpAgent(threading.Thread):
     def __init__(self):
-        k = 1
+        pass
 
 class TcpAgent(QObject):
 
@@ -74,7 +74,7 @@ class TcpAgent(QObject):
                 client_info = str( addr )
                 msg = "TCP Client is: " + client_info
                 self.sig_tcp_agent_send_msg.emit( msg )
-
+                self.sig_tcp_agent_client_name.emit(1, client_info)
                 try:
                     while True:
                         for client, address in self.client_socket_list:
@@ -86,6 +86,7 @@ class TcpAgent(QObject):
                             else:
                                 client.close()
                                 self.client_socket_list.remove( (client, address) )
+                                self.sig_tcp_agent_client_name.emit(0, str(address))
                                 break
                 finally:
                     self.tcp_socket.close()
