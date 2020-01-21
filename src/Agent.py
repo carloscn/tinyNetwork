@@ -8,7 +8,7 @@ import signal
 from PyQt5 import QtCore
 from PyQt5.QtCore import QByteArray, QObject, pyqtSignal
 
-class UdpAgent(threading.Thread):
+class UdpAgent(QObject):
     def __init__(self):
         pass
 

@@ -135,6 +135,7 @@ class MainWindow(QMainWindow):
                 break
             else:
                 pass
+
     def remove_all_client_info(self):
         for i in range(self.client_list_count):
             self.ui.tableWidgetClientList.removeRow(i)
@@ -216,7 +217,6 @@ class MainWindow(QMainWindow):
             self.ui.comboBoxMode.setEnabled( True )
             self.ui.pushButtonConnect.setEnabled( True )
             self.ui.pushButtonDisconnect.setEnabled( True )
-
 
     @QtCore.pyqtSlot("int", name="on_comboboxmode_currentindexchanged")
     def on_comboBoxMode_currentIndexChanged(self, int_index):
@@ -470,7 +470,6 @@ class MainWindow(QMainWindow):
         print("recv : sig_tcp_agent_send_msg :" + msg)
         self.pop_info_window( msg )
 
-
     @QtCore.pyqtSlot(str, name="sig_tcp_agent_send_error")
     def on_tcpAgent_send_error(self, msg):
         print("recv : sig_tcp_agent_send_error :" + msg)
@@ -502,11 +501,8 @@ class MainWindow(QMainWindow):
             print("a client info join" + name_str)
             self.insert_client_info(ip_str, port_str)
             pass
-
         else:
             pass
-
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
