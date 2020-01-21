@@ -320,6 +320,7 @@ class Ui_MainWindow(object):
         self.pushButtonClear.clicked.connect(MainWindow.on_pushButtonClear_clicked)
         self.pushButtonWriteIp.clicked.connect(MainWindow.on_pushButtonWriteIp_clicked)
         self.pushButtonAppIp.clicked.connect(MainWindow.on_pushButtonAppIp_clicked)
+        self.tableWidgetClientList.clicked["QModelIndex"].connect(MainWindow.on_tableWidgetClientList_clicked)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

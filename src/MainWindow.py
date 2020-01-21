@@ -10,8 +10,9 @@ import numpy
 from HexConvert import HexConvert as hexConv
 from Agent import TcpAgent as tcpAgent
 from Agent import UdpAgent as udpAgent
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMessageBox, QLabel
-from PyQt5.QtCore import pyqtSignal, QByteArray
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMessageBox, QLabel, QHeaderView
+from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtCore import pyqtSignal, QByteArray, QModelIndex
 from PyQt5 import QtCore
 
 ''' BACKUP SLOT FUNCTIONS ON MainUi.py to avoid MainUi.py is re-write when converted to MainUi.py automatilly.
@@ -63,6 +64,8 @@ class MainWindow(QMainWindow):
 
     repeat_send_time_ms = 0
 
+    client_list_count = 0
+    client_list = []
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -99,7 +102,44 @@ class MainWindow(QMainWindow):
         else:
             self.ui.groupBoxClientList.setHidden(False)
             self.setMaximumSize(0,0)
+        # init table widget of client list
+        self.ui.tableWidgetClientList.setRowCount(0);
+        self.ui.tableWidgetClientList.setColumnCount(2);
+        self.ui.tableWidgetClientList.setHorizontalHeaderLabels(["IP", "Port"])
+        self.ui.tableWidgetClientList.horizontalHeader().setSectionResizeMode( QHeaderView.Stretch )
+        self.ui.tableWidgetClientList.verticalHeader().hide()
+        self.client_list_count = 0
+        self.ui.tableWidgetClientList.horizontalHeader().setStyleSheet(
+            "QHeaderView::section{background-color:rgb(40,143,218);font:10pt;}");
 
+    def insert_client_info(self, ip_str, port_str):
+        back_up_str = ip_str + "," + port_str
+        self.client_list.append( back_up_str )
+        row_item = QTableWidgetItem()
+        col_item = QTableWidgetItem()
+        row_item.setText(ip_str)
+        col_item.setText(port_str)
+        self.ui.tableWidgetClientList.insertRow( self.client_list_count )
+        self.ui.tableWidgetClientList.setItem( self.client_list_count, 0, row_item )
+        self.ui.tableWidgetClientList.setItem( self.client_list_count, 1, col_item )
+        self.client_list_count = self.client_list_count + 1
+
+    def delete_client_info_by_ip(self, ip_str):
+        item = self.ui.tableWidgetClientList.findItems("ip_str",QtCore.Qt.MatchContains)
+        for i in range(self.client_list_count):
+            current_ip_str = self.ui.tableWidgetClientList.item(0, i).text()
+            if ip_str in current_ip_str or ip_str == current_ip_str:
+                self.ui.tableWidgetClientList.removeRow( i )
+                self.client_list.remove(i)
+                self.client_list_count = self.client_list_count - 1
+                break
+            else:
+                pass
+    def remove_all_client_info(self):
+        for i in range(self.client_list_count):
+            self.ui.tableWidgetClientList.removeRow(i)
+        self.client_list_count = 0
+        self.client_list.clear()
 
     def refresh_devices_list(self):
         for i in range( self.ui.comboBoxEthList.count() ):
@@ -217,6 +257,16 @@ class MainWindow(QMainWindow):
             self.ui.statusbar.showMessage("system: ping " + aim_ip + " network failed.", 3000)
             self.pop_error_window("system: ping " + aim_ip + " network failed.")
 
+    @QtCore.pyqtSlot("QModelIndex", name="on_tablewidgetclientlist_clicked")
+    def on_tableWidgetClientList_clicked(self, model):
+        if (self.client_list_count == 0):
+            return
+        print( "current_row" + str(model.row()) )
+        print( "current_column" + str(model.column()) )
+        index = model.row()
+        self.ui.lineEditAimIp.setText( self.client_list[index].split(',')[0] )
+        self.ui.lineEditAimPort.setText( self.client_list[index].split(',')[1] )
+
     @QtCore.pyqtSlot(name="on_pushbuttonconnect_click")
     def on_pushButtonConnect_click(self):
 
@@ -287,6 +337,7 @@ class MainWindow(QMainWindow):
     @QtCore.pyqtSlot(name="on_pushbuttondisconnect_click")
     def on_pushButtonDisconnect_click(self):
         self.tcpAgent.tcp_disconnect()
+        self.remove_all_client_info()
         self.ui.statusbar.showMessage("TCP Disconnected!")
         self.ui.statusbar.setStyleSheet("color: rgb(204, 0, 0);")
         self.ui.pushButtonConnect.setEnabled( True )
@@ -296,6 +347,7 @@ class MainWindow(QMainWindow):
         self.ui.comboBoxEthList.setEnabled( True )
         self.ui.comboBoxMode.setEnabled( True )
         self.ui.comboBoxProtocal.setEnabled( True )
+        self.tcpAgent.tcp_socket.close()
 
     @QtCore.pyqtSlot(name="on_radiobuttonrecascii_clicked")
     def on_radioButtonRecASCII_clicked(self):
@@ -418,6 +470,7 @@ class MainWindow(QMainWindow):
         print("recv : sig_tcp_agent_send_msg :" + msg)
         self.pop_info_window( msg )
 
+
     @QtCore.pyqtSlot(str, name="sig_tcp_agent_send_error")
     def on_tcpAgent_send_error(self, msg):
         print("recv : sig_tcp_agent_send_error :" + msg)
@@ -435,18 +488,21 @@ class MainWindow(QMainWindow):
 
     @QtCore.pyqtSlot(int, str, name="sig_tcp_agent_client_name")
     def on_tcpAgent_client_name(self, i_o_o, name_str):
-        (ip_str, port) = name_str
+
+        if "," in name_str and "." in name_str:
+            temp_str = name_str.split(",")
+            ip_str = temp_str[0].split("'")[1]
+            port_str = temp_str[1].split(")")[0]
+
         if i_o_o == 0:
-            print( "remove :" + name_str )
-            # delete client from list
+            print( "a client info  remove :" + name_str )
+            self.delete_client_info_by_ip(ip_str)
             pass
         elif i_o_o == 1:
-            # add client to list
-            ip_label = QLabel(ip_str)
-            port_label = QLabel(str(port))
-            self.ui.tableWidgetClientList.insertRow(1)
+            print("a client info join" + name_str)
+            self.insert_client_info(ip_str, port_str)
             pass
-        
+
         else:
             pass
 
