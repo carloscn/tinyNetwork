@@ -355,7 +355,7 @@ class MainWindow(QMainWindow):
             self.ui.statusbar.setStyleSheet("color: rgb(204, 0, 0);")
             self.tcpAgent.tcp_socket.close()
         elif self.ui.comboBoxProtocal.currentIndex() == self.PROTOCAL_UDP:
-
+            pass
         else:
             pass
         self.ui.pushButtonConnect.setEnabled(True)
