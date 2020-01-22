@@ -36,6 +36,7 @@ from PyQt5 import QtCore
         self.pushButtonClear.clicked.connect(MainWindow.on_pushButtonClear_clicked)
         self.pushButtonWriteIp.clicked.connect(MainWindow.on_pushButtonWriteIp_clicked)
         self.pushButtonAppIp.clicked.connect(MainWindow.on_pushButtonAppIp_clicked)
+        self.tableWidgetClientList.clicked["QModelIndex"].connect(MainWindow.on_tableWidgetClientList_clicked)
         
 '''
 
@@ -50,6 +51,7 @@ class MainWindow(QMainWindow):
     PROTOCAL_UDP = 1
     protocal_mode = PROTOCAL_TCP
     tcpAgent = tcpAgent()
+    udpAgent = udpAgent()
     eth_device_list = []
 
     ASCII_FLAG = 0
@@ -269,85 +271,100 @@ class MainWindow(QMainWindow):
 
     @QtCore.pyqtSlot(name="on_pushbuttonconnect_click")
     def on_pushButtonConnect_click(self):
+        if self.ui.comboBoxProtocal.currentIndex() == self.PROTOCAL_TCP:
+            mode = self.ui.comboBoxMode.currentIndex()
+            self.tcpAgent.set_mode( mode )
+            if self.ui.comboBoxMode.currentIndex() == self.MODE_CLIENT:
+                if len(self.ui.lineEditAimIp.text()) == 0:
+                    self.pop_error_window("Target IP is Empty!")
+                    self.ui.lineEditAimIp.setFocus()
+                    self.ui.lineEditAimIp.setStyleSheet("background-color: rgb(204, 0, 0);")
+                    return
+                if len(self.ui.lineEditAimPort.text()) == 0:
+                    self.pop_error_window("Target Port is Empty!")
+                    self.ui.lineEditAimPort.setFocus()
+                    self.ui.lineEditAimPort.setStyleSheet("background-color: rgb(204, 0, 0);")
+                    return
+                self.ui.lineEditAimPort.setStyleSheet("")
+                self.ui.lineEditAimIp.setStyleSheet("")
+                ip_str = self.ui.lineEditAimIp.text()
+                port_int = int(self.ui.lineEditAimPort.text())
+                if self.tcpAgent.connect(ip_str, port_int):
+                    self.pop_info_window( ip_str + "  " + str(port_int)  + " has been set up.")
+                    self.ui.statusbar.showMessage( "Linked-> ip : [" + ip_str + "]" + ", port : [" + str(port_int) + "]" )
+                    self.ui.statusbar.setStyleSheet("color: rgb(78, 154, 6);")
+                    self.ui.pushButtonConnect.setEnabled(False)
+                    self.ui.pushButtonDisconnect.setEnabled(True)
+                    self.ui.pushButtonAppIp.setEnabled(False)
+                    self.ui.pushButtonWriteIp.setEnabled(False)
+                    self.ui.comboBoxEthList.setEnabled(False)
+                    self.ui.comboBoxMode.setEnabled(False)
+                    self.ui.comboBoxProtocal.setEnabled(False)
+                else:
+                    pass
+            elif self.ui.comboBoxMode.currentIndex() == self.MODE_SERVER:
+                if len(self.ui.lineEditLocalIp.text()) == 0:
+                    self.pop_error_window("Local IP is Empty!")
+                    self.ui.lineEditLocalIp.setFocus()
+                    self.ui.lineEditLocalIp.setStyleSheet("background-color: rgb(204, 0, 0);")
+                    return
+                if len(self.ui.lineEditAimPort.text()) == 0:
+                    self.pop_error_window("Listen Port is Empty!")
+                    self.ui.lineEditLocalPort.setFocus()
+                    self.ui.lineEditLocalPort.setStyleSheet("background-color: rgb(204, 0, 0);")
+                    return
+                if self.ui.lineEditLocalIp.text() == "-":
+                    self.pop_error_window("Network device no ip was detected!")
+                    return
+                self.ui.lineEditLocalPort.setStyleSheet("")
+                self.ui.lineEditLocalIp.setStyleSheet("")
+                local_ip = self.ui.lineEditLocalIp.text()
+                local_port = self.ui.lineEditLocalPort.text()
 
-        mode = self.ui.comboBoxMode.currentIndex()
-        self.tcpAgent.set_mode( mode )
-        if self.ui.comboBoxMode.currentIndex() == self.MODE_CLIENT:
-            if len(self.ui.lineEditAimIp.text()) == 0:
-                self.pop_error_window("Target IP is Empty!")
-                self.ui.lineEditAimIp.setFocus()
-                self.ui.lineEditAimIp.setStyleSheet("background-color: rgb(204, 0, 0);")
-                return
-            if len(self.ui.lineEditAimPort.text()) == 0:
-                self.pop_error_window("Target Port is Empty!")
-                self.ui.lineEditAimPort.setFocus()
-                self.ui.lineEditAimPort.setStyleSheet("background-color: rgb(204, 0, 0);")
-                return
-            self.ui.lineEditAimPort.setStyleSheet("")
-            self.ui.lineEditAimIp.setStyleSheet("")
-            ip_str = self.ui.lineEditAimIp.text()
-            port_int = int(self.ui.lineEditAimPort.text())
-            if self.tcpAgent.connect(ip_str, port_int):
-                self.pop_info_window( ip_str + "  " + str(port_int)  + " has been set up.")
-                self.ui.statusbar.showMessage( "Linked-> ip : [" + ip_str + "]" + ", port : [" + str(port_int) + "]" )
-                self.ui.statusbar.setStyleSheet("color: rgb(78, 154, 6);")
-                self.ui.pushButtonConnect.setEnabled(False)
-                self.ui.pushButtonDisconnect.setEnabled(True)
-                self.ui.pushButtonAppIp.setEnabled(False)
-                self.ui.pushButtonWriteIp.setEnabled(False)
-                self.ui.comboBoxEthList.setEnabled(False)
-                self.ui.comboBoxMode.setEnabled(False)
-                self.ui.comboBoxProtocal.setEnabled(False)
+                if self.tcpAgent.connect(local_ip, int(local_port)):
+                    self.pop_info_window( "listen :" + local_ip + " , Port :" + local_port )
+                    self.ui.statusbar.showMessage( "listen :" + local_ip + " , Port :" + local_port )
+                    self.ui.statusbar.setStyleSheet("color: rgb(78, 154, 6);")
+                    self.ui.pushButtonConnect.setEnabled(False)
+                    self.ui.pushButtonDisconnect.setEnabled(True)
+                    self.ui.pushButtonAppIp.setEnabled(False)
+                    self.ui.pushButtonWriteIp.setEnabled(False)
+                    self.ui.comboBoxEthList.setEnabled(False)
+                    self.ui.comboBoxMode.setEnabled(False)
+                    self.ui.comboBoxProtocal.setEnabled(False)
             else:
+                # tcpAgent error information via the msg sginal-slot mechanism
                 pass
-        elif self.ui.comboBoxMode.currentIndex() == self.MODE_SERVER:
-            if len(self.ui.lineEditLocalIp.text()) == 0:
-                self.pop_error_window("Local IP is Empty!")
-                self.ui.lineEditLocalIp.setFocus()
-                self.ui.lineEditLocalIp.setStyleSheet("background-color: rgb(204, 0, 0);")
-                return
-            if len(self.ui.lineEditAimPort.text()) == 0:
-                self.pop_error_window("Listen Port is Empty!")
-                self.ui.lineEditLocalPort.setFocus()
-                self.ui.lineEditLocalPort.setStyleSheet("background-color: rgb(204, 0, 0);")
-                return
-            if self.ui.lineEditLocalIp.text() == "-":
-                self.pop_error_window("Network device no ip was detected!")
-                return
-            self.ui.lineEditLocalPort.setStyleSheet("")
-            self.ui.lineEditLocalIp.setStyleSheet("")
+        elif self.ui.comboBoxProtocal.currentIndex() == self.PROTOCAL_UDP:
             local_ip = self.ui.lineEditLocalIp.text()
             local_port = self.ui.lineEditLocalPort.text()
-
-            if self.tcpAgent.connect(local_ip, int(local_port)):
-                self.pop_info_window( "listen :" + local_ip + " , Port :" + local_port )
-                self.ui.statusbar.showMessage( "listen :" + local_ip + " , Port :" + local_port )
-                self.ui.statusbar.setStyleSheet("color: rgb(78, 154, 6);")
-                self.ui.pushButtonConnect.setEnabled(False)
-                self.ui.pushButtonDisconnect.setEnabled(True)
-                self.ui.pushButtonAppIp.setEnabled(False)
-                self.ui.pushButtonWriteIp.setEnabled(False)
-                self.ui.comboBoxEthList.setEnabled(False)
-                self.ui.comboBoxMode.setEnabled(False)
-                self.ui.comboBoxProtocal.setEnabled(False)
+            if udpAgent.bind_udp(local_ip, int(local_port)):
+                pass
+            else:
+                pass
         else:
-            # tcpAgent error information via the msg sginal-slot mechanism
             pass
+
 
     @QtCore.pyqtSlot(name="on_pushbuttondisconnect_click")
     def on_pushButtonDisconnect_click(self):
-        self.tcpAgent.tcp_disconnect()
-        self.remove_all_client_info()
-        self.ui.statusbar.showMessage("TCP Disconnected!")
-        self.ui.statusbar.setStyleSheet("color: rgb(204, 0, 0);")
-        self.ui.pushButtonConnect.setEnabled( True )
-        self.ui.pushButtonDisconnect.setEnabled( False )
-        self.ui.pushButtonAppIp.setEnabled( True )
-        self.ui.pushButtonWriteIp.setEnabled( True )
-        self.ui.comboBoxEthList.setEnabled( True )
-        self.ui.comboBoxMode.setEnabled( True )
-        self.ui.comboBoxProtocal.setEnabled( True )
-        self.tcpAgent.tcp_socket.close()
+        if self.ui.comboBoxProtocal.currentIndex() == self.PROTOCAL_TCP:
+            self.tcpAgent.tcp_disconnect()
+            self.remove_all_client_info()
+            self.ui.statusbar.showMessage("TCP Disconnected!")
+            self.ui.statusbar.setStyleSheet("color: rgb(204, 0, 0);")
+            self.tcpAgent.tcp_socket.close()
+        elif self.ui.comboBoxProtocal.currentIndex() == self.PROTOCAL_UDP:
+
+        else:
+            pass
+        self.ui.pushButtonConnect.setEnabled(True)
+        self.ui.pushButtonDisconnect.setEnabled(False)
+        self.ui.pushButtonAppIp.setEnabled(True)
+        self.ui.pushButtonWriteIp.setEnabled(True)
+        self.ui.comboBoxEthList.setEnabled(True)
+        self.ui.comboBoxMode.setEnabled(True)
+        self.ui.comboBoxProtocal.setEnabled(True)
 
     @QtCore.pyqtSlot(name="on_radiobuttonrecascii_clicked")
     def on_radioButtonRecASCII_clicked(self):

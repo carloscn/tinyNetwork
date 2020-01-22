@@ -9,8 +9,103 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QByteArray, QObject, pyqtSignal
 
 class UdpAgent(QObject):
+
+    # threading info
+    threading_id = 179
+    threading_name = "udp_rec"
+    threading_counter = 0
+    target_ip = ""
+    target_port = 8080
+    local_ip = ""
+    local_port = 8888
+    udp_socket = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+
+    TARGET_MODE = 0
+    BROADCAST_MODE = 1
+
+    is_blind = False
+
+    sig_udp_agent_send_msg = pyqtSignal(str, name="sig_udp_agent_send_msg")
+    sig_udp_agent_send_error = pyqtSignal(str, name="sig_udp_agent_send_error")
+    sig_udp_agent_recv_network_msg = pyqtSignal("QByteArray", name="sig_udp_agent_recv_network_msg")
+
+    def _async_raise(self, tid, exctype):
+        """raises the exception, performs cleanup if needed"""
+        tid = ctypes.c_long(tid)
+        if not inspect.isclass(exctype):
+            exctype = type(exctype)
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+        if res == 0:
+            raise ValueError("invalid thread id")
+        elif res != 1:
+            # """if it returns a number greater than one, you're in trouble,
+            # and you should call it again with exc=NULL to revert the effect"""
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+            raise SystemError("PyThreadState_SetAsyncExc failed")
+
+    def stop_thread(self, thread):
+        self._async_raise(thread.ident, SystemExit)
+
+    def run_thread(self):
+        while True:
+            recv_bytes = self.udp_socket.recv(1024)
+            if recv_bytes:
+                q_recv_array = QByteArray()
+                q_recv_array.append(recv_bytes)
+                self.sig_udp_agent_recv_network_msg.emit(q_recv_array)
+
+    recv_threading = threading.Thread()
+    def bind_udp(self, ip_str, port_int):
+        self.local_ip = ip_str
+        self.local_port = port_int
+        try:
+            self.udp_socket.bind( self.local_ip,  self.local_port )
+        except Exception as ret:
+            msg = "Run into a error:\n" + str(ret)
+            self.sig_udp_agent_send_error.emit(msg)
+            self.is_blind = False
+        else:
+            self.is_blind = True
+        return self.is_blind
+
+    def unbind_udp(self):
+        try:
+            self.udp_socket.close()
+        except Exception as ret:
+            msg = "Run into a error:\n" + str(ret)
+            self.sig_udp_agent_send_error.emit(msg)
+        else:
+            self.is_blind = False
+
+    def send_bytes(self, byte_list):
+        try :
+            self.udp_socket.sendall( byte_list )
+        except Exception as ret:
+            msg = "The network run into an error!\n" + str( ret )
+            self.sig_udp_agent_send_error.emit( msg )
+        else:
+            pass
+
+    def send_byte(self, byte):
+        try :
+            self.udp_socket.send( byte )
+        except Exception as ret:
+            msg = "The network run into an error!\n" + str( ret )
+            self.sig_udp_agent_send_error.emit( msg )
+        else:
+            pass
+
+    def on_udp_agent_bind_click(self):
+        self.bind_udp()
+
+    def on_udp_agent_unbind_click(self):
+        self.unbind_udp()
+
     def __init__(self):
         pass
+
+
+
 
 class TcpAgent(QObject):
 
@@ -68,7 +163,6 @@ class TcpAgent(QObject):
     def run_thread(self):
         if self.mode == self.MODE_SERVER:
             while True:
-
                 client_socket, addr = self.tcp_socket.accept()
                 self.client_socket_list.append( (client_socket, addr ) )
                 client_info = str( addr )
