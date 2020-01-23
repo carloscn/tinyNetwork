@@ -1,5 +1,27 @@
 # -*- coding: utf-8 -*-
-import numpy as np
+#
+#  * \brief   This project about Tiny Network Serial.
+#  *
+#  * \License  THIS FILE IS PART OF MULTIBEANS PROJECT;
+#  *           all of the files  - The core part of the project;
+#  *           THIS PROGRAM IS NOT FREE SOFTWARE, NEED MULTIBEANS ORG LIC;
+#  *
+#  *                ________________     ___           _________________
+#  *               |    __    __    |   |   |         |______     ______|
+#  *               |   |  |  |  |   |   |   |                |   |
+#  *               |   |  |__|  |   |   |   |________        |   |
+#  *               |___|        |___|   |____________|       |___|
+#  *
+#  *                               MULTIBEANS ORG.
+#  *                     Homepage: http://www.mltbns.com/
+#  *
+#  *           * You can download the license on our Github. ->
+#  *           * -> https://github.com/lifimlt  <-
+#  *           * Copyright (c) 2020 Carlos Wei: # carlos.wei.hk@gmail.com.
+#  *           * Copyright (c) 2013-2020 MULTIBEANS ORG. http://www.mltbns.com/
+#  *
+#  *  \note    void.
+#  ****************************************************************************
 
 class HexConvert:
 
