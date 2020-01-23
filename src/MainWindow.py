@@ -211,8 +211,6 @@ class MainWindow(QMainWindow):
         self.protocal_mode = int_index
         if int_index == self.PROTOCAL_UDP:
             self.ui.comboBoxMode.setEnabled( False )
-            self.ui.pushButtonConnect.setEnabled( False )
-            self.ui.pushButtonDisconnect.setEnabled( False )
             self.ui.lineEditLocalPort.setEnabled( False )
             self.ui.lineEditLocalIp.setEnabled( False )
         else:
@@ -271,6 +269,7 @@ class MainWindow(QMainWindow):
 
     @QtCore.pyqtSlot(name="on_pushbuttonconnect_click")
     def on_pushButtonConnect_click(self):
+        ui_deal_flag = False
         if self.ui.comboBoxProtocal.currentIndex() == self.PROTOCAL_TCP:
             mode = self.ui.comboBoxMode.currentIndex()
             self.tcpAgent.set_mode( mode )
@@ -293,13 +292,7 @@ class MainWindow(QMainWindow):
                     self.pop_info_window( ip_str + "  " + str(port_int)  + " has been set up.")
                     self.ui.statusbar.showMessage( "Linked-> ip : [" + ip_str + "]" + ", port : [" + str(port_int) + "]" )
                     self.ui.statusbar.setStyleSheet("color: rgb(78, 154, 6);")
-                    self.ui.pushButtonConnect.setEnabled(False)
-                    self.ui.pushButtonDisconnect.setEnabled(True)
-                    self.ui.pushButtonAppIp.setEnabled(False)
-                    self.ui.pushButtonWriteIp.setEnabled(False)
-                    self.ui.comboBoxEthList.setEnabled(False)
-                    self.ui.comboBoxMode.setEnabled(False)
-                    self.ui.comboBoxProtocal.setEnabled(False)
+                    ui_deal_flag = True
                 else:
                     pass
             elif self.ui.comboBoxMode.currentIndex() == self.MODE_SERVER:
@@ -325,46 +318,57 @@ class MainWindow(QMainWindow):
                     self.pop_info_window( "listen :" + local_ip + " , Port :" + local_port )
                     self.ui.statusbar.showMessage( "listen :" + local_ip + " , Port :" + local_port )
                     self.ui.statusbar.setStyleSheet("color: rgb(78, 154, 6);")
-                    self.ui.pushButtonConnect.setEnabled(False)
-                    self.ui.pushButtonDisconnect.setEnabled(True)
-                    self.ui.pushButtonAppIp.setEnabled(False)
-                    self.ui.pushButtonWriteIp.setEnabled(False)
-                    self.ui.comboBoxEthList.setEnabled(False)
-                    self.ui.comboBoxMode.setEnabled(False)
-                    self.ui.comboBoxProtocal.setEnabled(False)
+                    ui_deal_flag = True
             else:
                 # tcpAgent error information via the msg sginal-slot mechanism
                 pass
         elif self.ui.comboBoxProtocal.currentIndex() == self.PROTOCAL_UDP:
             local_ip = self.ui.lineEditLocalIp.text()
-            local_port = self.ui.lineEditLocalPort.text()
-            if udpAgent.bind_udp(local_ip, int(local_port)):
+            local_port = int( self.ui.lineEditLocalPort.text() )
+            print( "local_port " + self.ui.lineEditLocalPort.text())
+            if self.udpAgent.bind_udp(local_ip, local_port):
+                ui_deal_flag = True
                 pass
             else:
+                # Having msg signal pop when run into the error.
                 pass
         else:
             pass
+        # Deal with the ui logic when set up connection.
+        if ui_deal_flag == True:
+            self.ui.pushButtonConnect.setEnabled(False)
+            self.ui.pushButtonDisconnect.setEnabled(True)
+            self.ui.pushButtonAppIp.setEnabled(False)
+            self.ui.pushButtonWriteIp.setEnabled(False)
+            self.ui.comboBoxEthList.setEnabled(False)
+            self.ui.comboBoxMode.setEnabled(False)
+            self.ui.comboBoxProtocal.setEnabled(False)
 
 
     @QtCore.pyqtSlot(name="on_pushbuttondisconnect_click")
     def on_pushButtonDisconnect_click(self):
+        ui_deal_flag = False
         if self.ui.comboBoxProtocal.currentIndex() == self.PROTOCAL_TCP:
             self.tcpAgent.tcp_disconnect()
             self.remove_all_client_info()
             self.ui.statusbar.showMessage("TCP Disconnected!")
             self.ui.statusbar.setStyleSheet("color: rgb(204, 0, 0);")
             self.tcpAgent.tcp_socket.close()
+            ui_deal_flag = True
         elif self.ui.comboBoxProtocal.currentIndex() == self.PROTOCAL_UDP:
-            pass
+            self.udpAgent.unbind_udp()
+            ui_deal_flag = True
         else:
+            ui_deal_flag = False
             pass
-        self.ui.pushButtonConnect.setEnabled(True)
-        self.ui.pushButtonDisconnect.setEnabled(False)
-        self.ui.pushButtonAppIp.setEnabled(True)
-        self.ui.pushButtonWriteIp.setEnabled(True)
-        self.ui.comboBoxEthList.setEnabled(True)
-        self.ui.comboBoxMode.setEnabled(True)
-        self.ui.comboBoxProtocal.setEnabled(True)
+        if ui_deal_flag == True:
+            self.ui.pushButtonConnect.setEnabled(True)
+            self.ui.pushButtonDisconnect.setEnabled(False)
+            self.ui.pushButtonAppIp.setEnabled(True)
+            self.ui.pushButtonWriteIp.setEnabled(True)
+            self.ui.comboBoxEthList.setEnabled(True)
+            self.ui.comboBoxMode.setEnabled(True)
+            self.ui.comboBoxProtocal.setEnabled(True)
 
     @QtCore.pyqtSlot(name="on_radiobuttonrecascii_clicked")
     def on_radioButtonRecASCII_clicked(self):
@@ -420,12 +424,23 @@ class MainWindow(QMainWindow):
             self.ui.textEditSend.setFocus()
             return
         browser_text = self.ui.textEditSend.toPlainText()
-        if self.send_disp_mode == self.ASCII_FLAG:
-            send_bytes = hexConv.stringToUtf8( browser_text )
-            self.tcpAgent.send_bytes( send_bytes )
-        elif self.send_disp_mode == self.HEX_FLAG:
-            send_bytes = hexConv.hexStringTobytes( browser_text )
-            self.tcpAgent.send_bytes( send_bytes )
+        if self.protocal_mode == self.PROTOCAL_TCP:
+            if self.send_disp_mode == self.ASCII_FLAG:
+                send_bytes = hexConv.stringToUtf8( browser_text )
+                self.tcpAgent.send_bytes( send_bytes )
+            elif self.send_disp_mode == self.HEX_FLAG:
+                send_bytes = hexConv.hexStringTobytes( browser_text )
+                self.tcpAgent.send_bytes( send_bytes )
+        elif self.protocal_mode == self.PROTOCAL_UDP:
+            ip_port = [ip, port] = [self.ui.lineEditAimIp.text(), int(self.ui.lineEditAimPort.text())]
+            if self.send_disp_mode == self.ASCII_FLAG:
+                send_bytes = hexConv.stringToUtf8( browser_text )
+                self.udpAgent.send_bytes( send_bytes, ip_port)
+            elif self.send_disp_mode == self.HEX_FLAG:
+                send_bytes = hexConv.hexStringTobytes( browser_text )
+                self.udpAgent.send_bytes( send_bytes, ip_port )
+        else:
+            pass
 
     @QtCore.pyqtSlot(name="on_pushbuttonclear_clicked")
     def on_pushButtonClear_clicked(self):
@@ -502,6 +517,36 @@ class MainWindow(QMainWindow):
             print(int_list)
             self.ui.textBrowserRec.append( hexConv.intlistToHexString( int_list ) )
 
+    @QtCore.pyqtSlot(str, name="sig_udp_agent_send_error")
+    def on_udpAgent_send_error(self, msg):
+        print("recv : sig_tcp_agent_send_error :" + msg)
+        self.pop_error_window( msg )
+
+    @QtCore.pyqtSlot(str, name="sig_udp_agent_send_error")
+    def on_udpAgent_send_msg(self, msg):
+        print("recv : sig_udp_agent_send_error :" + msg)
+        self.pop_info_window( msg )
+
+    @QtCore.pyqtSlot("QByteArray", name="sig_udp_agent_recv_network_msg")
+    def on_udpAgent_recv_network_msg(self, array):
+        print(array)
+        if self.recv_disp_mode == self.ASCII_FLAG:
+            self.ui.textBrowserRec.append( str(array, encoding='utf-8') )
+        else:
+            int_list = numpy.array( array )
+            print(int_list)
+            self.ui.textBrowserRec.append( hexConv.intlistToHexString( int_list ) )
+
+    @QtCore.pyqtSlot("QByteArray", name="sig_udp_agent_recv_network_msg")
+    def on_udpAgent_recv_network_msg(self, array):
+        print(array)
+        if self.recv_disp_mode == self.ASCII_FLAG:
+            self.ui.textBrowserRec.append( str(array, encoding='utf-8') )
+        else:
+            int_list = numpy.array( array )
+            print(int_list)
+            self.ui.textBrowserRec.append( hexConv.intlistToHexString( int_list ) )
+
     @QtCore.pyqtSlot(int, str, name="sig_tcp_agent_client_name")
     def on_tcpAgent_client_name(self, i_o_o, name_str):
 
@@ -526,9 +571,17 @@ if __name__ == '__main__':
     win = MainWindow()
     # Deal with the signal and slot
     # Move the signal-slot connected functions to self.__init__() that is samely.
+    # tcp slot.
     win.tcpAgent.sig_tcp_agent_send_msg.connect( win.on_tcpAgent_send_msg )
     win.tcpAgent.sig_tcp_agent_recv_network_msg.connect( win.on_tcpAgent_recv_network_msg )
     win.tcpAgent.sig_tcp_agent_client_name.connect( win.on_tcpAgent_client_name )
-    win.tcpAgent.sig_tcp_agent_send_error.connect(win.on_tcpAgent_send_error)
+    win.tcpAgent.sig_tcp_agent_send_error.connect( win.on_tcpAgent_send_error )
+    # udp slot.
+    win.udpAgent.sig_udp_agent_recv_network_msg.connect(win.on_udpAgent_recv_network_msg)
+    win.udpAgent.sig_udp_agent_send_error.connect( win.on_udpAgent_send_error )
+    win.udpAgent.sig_udp_agent_send_msg.connect( win.on_udpAgent_send_msg )
+
+
+
     win.show()
     sys.exit(app.exec_())

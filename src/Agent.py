@@ -4,6 +4,7 @@ import socket
 import threading
 import inspect
 import ctypes
+from typing import Union
 import signal
 from PyQt5 import QtCore
 from PyQt5.QtCore import QByteArray, QObject, pyqtSignal
@@ -48,6 +49,7 @@ class UdpAgent(QObject):
 
     def run_thread(self):
         while True:
+            print("while")
             recv_bytes = self.udp_socket.recv(1024)
             if recv_bytes:
                 q_recv_array = QByteArray()
@@ -58,14 +60,18 @@ class UdpAgent(QObject):
     def bind_udp(self, ip_str, port_int):
         self.local_ip = ip_str
         self.local_port = port_int
+        self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            self.udp_socket.bind( self.local_ip,  self.local_port )
+            self.udp_socket.bind( (self.local_ip,  self.local_port) )
         except Exception as ret:
             msg = "Run into a error:\n" + str(ret)
             self.sig_udp_agent_send_error.emit(msg)
             self.is_blind = False
         else:
             self.is_blind = True
+            self.recv_threading = threading.Thread(target=self.run_thread, name=self.threading_name)
+            self.recv_threading.start()
+            print("sys: udp server wait recv data.")
         return self.is_blind
 
     def unbind_udp(self):
@@ -76,19 +82,25 @@ class UdpAgent(QObject):
             self.sig_udp_agent_send_error.emit(msg)
         else:
             self.is_blind = False
+            self.stop_thread( self.recv_threading )
 
-    def send_bytes(self, byte_list):
+
+    def send_bytes(self, byte_list, ip_port: Union[str, int]):
+        # print("write: ")
+        # print(byte_list)
+        # print(" to ")
+        # print(ip_port)
         try :
-            self.udp_socket.sendall( byte_list )
+            self.udp_socket.sendto(byte_list, (ip_port[0], ip_port[1]))
         except Exception as ret:
             msg = "The network run into an error!\n" + str( ret )
             self.sig_udp_agent_send_error.emit( msg )
         else:
             pass
 
-    def send_byte(self, byte):
+    def send_byte(self, byte ,ip_port: Union[str, int]):
         try :
-            self.udp_socket.send( byte )
+            self.udp_socket.sendto(byte, (ip_port[0], ip_port[1]) )
         except Exception as ret:
             msg = "The network run into an error!\n" + str( ret )
             self.sig_udp_agent_send_error.emit( msg )
@@ -102,7 +114,7 @@ class UdpAgent(QObject):
         self.unbind_udp()
 
     def __init__(self):
-        pass
+        super( UdpAgent, self ).__init__()
 
 
 
