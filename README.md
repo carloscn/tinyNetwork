@@ -47,4 +47,4 @@ brew cask install electronic-wechat
 
 #### License [GNU General Public License v3.0](LICENSE)
 
-*Network TCP/UDP Debug Tool* is released by this open source project. 
+*Network TCP/UDP Debug Tool* is released by this open source project. Born on 2020 Spring Festival Day in China.

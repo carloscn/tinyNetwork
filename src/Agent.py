@@ -107,7 +107,6 @@ class UdpAgent(QObject):
             self.is_blind = False
             self.stop_thread( self.recv_threading )
 
-
     def send_bytes(self, byte_list, ip_port: Union[str, int]):
         # print("write: ")
         # print(byte_list)
@@ -138,8 +137,6 @@ class UdpAgent(QObject):
 
     def __init__(self):
         super( UdpAgent, self ).__init__()
-
-
 
 
 class TcpAgent(QObject):
