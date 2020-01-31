@@ -15,15 +15,11 @@
 
 ## How To Use
 
-To clone and run this repository you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](https://www.npmjs.com/)) installed on your computer. From your command line:
+To run the project you'll need Pycharm IDE, PyQt5, Python3.x and these are libraries installed on your computer. From your command line:
 
 ``` bash
-# Clone this repository
-git clone https://github.com/geeeeeeeeek/electronic-wechat.git
-# Go into the repository
-cd electronic-wechat
-# Install dependencies and run the app
-npm install && npm start
+# use pip install pyqt5 using the douban mirror in China.
+python -m pip install pyqt5  psutil numpy -i https://pypi.douban.com/simple
 ```
 
 To pack into an app, simply type one of these:
